@@ -45,7 +45,7 @@ ol.steps{margin:6px 0 0 18px;padding:0}ol.steps li{margin:3px 0}
 .card{border:1px solid var(--border);background:var(--card);border-radius:10px;padding:10px 12px}
 .yes{color:#3a9d5d;font-weight:600}.no{color:var(--muted-foreground)}.maybe{color:#c98a1b;font-weight:600}
 code{font-size:12px}
-</style></head><body><div style="font-size:12px;opacity:.7;margin-bottom:6px">Public copy: clients shown as [client]. Published 2026-11-27 00:05 ET · <a href="decisions.html">Decisions board</a></div>
+</style></head><body><div style="font-size:12px;opacity:.7;margin-bottom:6px">Public copy: clients shown as [client]. Published 2026-11-27 00:06 ET · <a href="decisions.html">Decisions board</a></div>
 
 <div class="tabs">
  <button class="tab on" data-t="map">1 · System map</button>
@@ -182,7 +182,7 @@ const N=[
  {id:'s_screen',lane:'src',t:'Screen activity + clips',st:'planned',d:'Bluey-style: active-window sampling, screenshots to holding, hotkey clips. Feeds time tracking and instructions.',ph:'P6 (idea)',tech:'Windows capture app'},
  // capture
  {id:'c_sup',lane:'cap',t:'Mini supervisor + collectors',st:'exists',d:'scheduler.mjs + jobs.json runs 23 jobs: collectors, Brain passes, the rollover (03:40) and the chunk quarantine (Sun 06:30). Each collector writes an event when something new arrives.',ph:'P1',tech:'Node supervisor, Windows'},
- {id:'c_app',lane:'cap',t:'SSG Capture desktop app',st:'planned',d:'One Windows tray app per employee: their own WhatsApp, Otter, screen activity, clip hotkey and snip-and-ask, plus one consent screen. Private by default; the person releases what goes to the brain.',ph:'P6',tech:'WinUI 3'},
+ {id:'c_app',lane:'cap',t:'CaptureCompanion (desktop)',st:'partial',d:'One Windows tray app per employee: their own WhatsApp, Otter, screen activity, clip hotkey and snip-and-ask, plus one consent screen. Private by default; the person releases what goes to the brain.',ph:'P6',tech:'WinUI 3'},
  {id:'c_label',lane:'cap',t:'Labeller (sensitivity)',st:'planned',d:'Labels every item General / Restricted / Private, and separately client data vs SSG-internal, before it is stored. Presidio for salaries, account numbers and names; the M365 block list for Nik\'s mail.',ph:'P2',tech:'Presidio + rules'},
  {id:'c_tx',lane:'cap',t:'Transcription + speakers',st:'partial',d:'Whisper / silero VAD in BrainCapture today; pyannote voice profiles for speaker names.',ph:'P6',tech:'faster-whisper, pyannote'},
  {id:'c_hc',lane:'cap',t:'Healthchecks',st:'planned',d:'Every job pings its own link when it finishes; a late ping raises an alert. Fills the biggest gap: nothing alerts on failure today.',ph:'P1',tech:'healthchecks.io (free 20)'},
@@ -206,7 +206,7 @@ const N=[
  {id:'w_syn',lane:'wf',t:'Synthesis',st:'exists',d:'Hourly and 5 AM Brain passes. Since 11/26 they rewrite each page\'s Current state block in place; later they write facts and threads.',ph:'—',tech:'Claude on the Mini'},
  {id:'w_chk',lane:'wf',t:'Checker agent',st:'partial',d:'A second agent compares each draft with its sources (audits exist as tools today). Failures are fixed or flagged.',ph:'P2',tech:'Claude + eval set'},
  {id:'w_brief',lane:'wf',t:'Morning brief',st:'partial',d:'Per person: their threads, their day, what changed. The deep pass writes a report today, but it isn\'t delivered anywhere.',ph:'P4',tech:'job'},
- {id:'w_time',lane:'wf',t:'Time assembly → TimeCamp',st:'planned',d:'Every 30 min Claude merges the local screen extracts (app, window, URL, on-screen text, PC-clock timestamps) and a screenshot every 5 min with WhatsApp, calls, email and calendar, then writes the time entries into TimeCamp, marked as auto-entered so the person can correct them. Each person consents at install and can switch it off or set a timer. About $3.25/month for 5 people.',ph:'P6 (confirmed shape 11/27)',tech:'local extractor + Haiku + TimeCamp API (a token per person)'},
+ {id:'w_time',lane:'wf',t:'Time assembly → TimeCamp',st:'planned',d:'At midday (~1 PM) and end of day (~6 PM) Claude merges the local screen extracts (app, window, URL, on-screen text, PC-clock timestamps) and a screenshot every 5 min with WhatsApp, calls, email and calendar, then writes the time entries into TimeCamp, marked as auto-entered so the person can correct them. Each person consents at install and can switch it off or set a timer. About $3.25/month for 5 people.',ph:'P6 (confirmed shape 11/27)',tech:'local extractor + Haiku + TimeCamp API (a token per person)'},
  {id:'w_route',lane:'wf',t:'Clip / instruction router',st:'idea',d:'Works out who a clip or instruction is for, sends it, and opens a thread row.',ph:'P6 (idea)',tech:'job'},
  {id:'w_learn',lane:'wf',t:'Learning loop',st:'planned',d:'A daily agent log (worked on / learned / decided / open), a findings file per workflow, a weekly lint/janitor job and an eval set (Langfuse).',ph:'P1.5',tech:'files → DB'},
  // front ends
@@ -240,7 +240,7 @@ const FLOWS=[
  {k:'ask',t:'Someone asks the brain',path:['f_ask','a_mcp','a_api','a_perm','a_ctx','d_facts','d_docs','d_ent'],
   steps:['A question arrives from any front end: Cowork, phone, Teams or snip-and-ask.','The API identifies the person and their role, clients and workflow.','Retrieval finds the entity, searches facts and documents, and drops anything the person may not see.','The source-wins rule (F) settles conflicts and flags E-type ones.','A small cited context pack goes to the model, and the answer comes back with sources.']},
  {k:'time',t:'Screen + calls + chats → time tracking',path:['s_screen','s_otter','s_wa','s_mail','c_app','c_sup','c_label','e_events','e_epis','w_time','a_ctx','f_home'],
-  steps:['During the day the PC extracts locally: app, window title, URL, on-screen text, timestamps from the PC clock; plus one screenshot every 5 min.','All land as events on the person\'s own timeline, alongside calls, WhatsApps, emails and calendar.','Every 30 min Claude groups them into time blocks, e.g. "9:10–9:55 [client] fact sheet".','It writes those blocks straight into TimeCamp, marked as auto-entered, with evidence links.','The person corrects anything wrong in TimeCamp; corrections feed the learning loop.']},
+  steps:['During the day the PC extracts locally: app, window title, URL, on-screen text, timestamps from the PC clock; plus one screenshot every 5 min.','All land as events on the person\'s own timeline, alongside calls, WhatsApps, emails and calendar.','At midday and end of day Claude groups them into time blocks, e.g. "9:10–9:55 [client] fact sheet".','It writes those blocks straight into TimeCamp, marked as auto-entered, with evidence links.','The person corrects anything wrong in TimeCamp; corrections feed the learning loop.']},
  {k:'clip',t:'Hotkey clip → the right person',path:['f_desk','c_app','d_media','c_tx','e_events','e_queue','w_route','d_facts','a_perm','f_threads'],
   steps:['Nik presses the hotkey and records under 5 minutes of screen and voice.','The clip goes to holding storage and gets a transcript.','The router works out the audience and the task ("Mike: update the [client] role sheet").','It sends a link, after confirmation in the first weeks, and opens a thread row.','Lifecycle: holding → hot (N days) → cold → delete, unless pinned.']},
  {k:'room',t:'Room recording → meeting, silence removed',path:['s_room','c_tx','c_sup','e_events','d_media','e_queue','w_syn','f_player'],
@@ -345,8 +345,9 @@ const PH=[
  ]},
  {t:'Phase 6 · Capture expansion',w:'Q2',items:[
   ['next','Office Capture → events + media storage; player with share links; Vexa vs Grain ten-meeting test'],
-  ['next','SSG Capture desktop app (Windows): own WhatsApp, Otter, consent screen'],
-  ['next','Screen companion (confirmed shape): local extraction (app, window, URL, OCR, PC clock) + a screenshot every 5 min to Haiku; every 30 min Claude merges with the other timelines and writes the TimeCamp entries (marked auto, editable); consent at install, on/off and timer'],
+  ['now','CaptureCompanion (Windows, WinUI 3): floating bubble, clip + snip sharing, snip-and-ask, consent + local activity capture; MVP build started 11/27'],
+  ['next','CaptureCompanion: own WhatsApp, Otter'],
+  ['next','Screen companion (confirmed shape): local extraction (app, window, URL, OCR, PC clock) + a screenshot every 5 min to Haiku; at midday and end of day Claude merges with the other timelines and writes the TimeCamp entries (marked auto, editable); consent at install, on/off and timer'],
   ['later','<i>Idea:</i> hotkey clips + router; snip and ask'],
  ]},
  {t:'Phase 7 · Pages (Stratpad)',w:'later',items:[['later','Candidate page first, then client workspaces with AI actions']]},
