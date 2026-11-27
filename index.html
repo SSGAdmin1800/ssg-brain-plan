@@ -1,0 +1,416 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>SSG Brain — system map & roadmap</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--foreground:#1d1d1f;--muted-foreground:#6b6b70;--border:#d9d9de;--card:#f6f6f8;--accent:#2f6fde}
+@media (prefers-color-scheme:dark){:root{--foreground:#e8e8ea;--muted-foreground:#9a9aa0;--border:#38383c;--card:#1c1c1f;--accent:#5aa2ff}html{background:#121214}}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:1000px;margin:20px auto;padding:0 16px}
+*{box-sizing:border-box}
+body{color:var(--foreground);font-size:14px;line-height:1.45}
+h2{font-size:18px;margin:18px 0 6px}h3{font-size:15px;margin:14px 0 6px}p{margin:6px 0}
+.muted{color:var(--muted-foreground)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px}
+.tab{border:1px solid var(--border);background:var(--card);color:var(--foreground);padding:6px 11px;border-radius:8px;cursor:pointer;font:inherit;font-size:13px}
+.tab.on{border-color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+.pane{display:none}.pane.on{display:block}
+svg text{font-family:inherit}
+.node rect{stroke:var(--border);stroke-width:1;fill:var(--card)}
+.node{cursor:pointer}
+.node.sel rect{stroke:var(--accent);stroke-width:2.5}
+.node.dim{opacity:.25}.edge.dim{opacity:.08}
+.edge{fill:none;stroke:var(--muted-foreground);stroke-width:1;opacity:.35}
+.edge.hot{stroke:var(--accent);opacity:1;stroke-width:2.2}
+.lane{fill:none;stroke:var(--border);stroke-dasharray:3 4}
+.lanelab{font-size:11px;fill:var(--muted-foreground);letter-spacing:.06em;text-transform:uppercase}
+.st-exists{fill:#3a9d5d}.st-partial{fill:#c98a1b}.st-planned{fill:#4a7fd4}.st-idea{fill:#9b6bd1}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:4px 0 8px}
+.legend i.st-exists{background:#3a9d5d}.legend i.st-partial{background:#c98a1b}.legend i.st-planned{background:#4a7fd4}.legend i.st-idea{background:#9b6bd1}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.panel{border:1px solid var(--border);background:var(--card);border-radius:10px;padding:10px 14px;margin-top:10px;min-height:80px}
+.panel b.t{font-size:15px}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:3px 12px;margin-top:6px;font-size:13px}
+.kv div:nth-child(odd){color:var(--muted-foreground)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted-foreground);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);white-space:nowrap}
+.p-done{border-color:#3a9d5d;color:#3a9d5d}.p-now{border-color:#c98a1b;color:#c98a1b}.p-next{border-color:#4a7fd4;color:#4a7fd4}.p-later{border-color:var(--border);color:var(--muted-foreground)}.p-dec{border-color:#c4473a;color:#c4473a}
+.flows{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.fl{border:1px solid var(--border);background:var(--card);color:var(--foreground);border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;font-size:12px}
+.fl.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+ol.steps{margin:6px 0 0 18px;padding:0}ol.steps li{margin:3px 0}
+.phase{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px 12px;margin:10px 0}
+.phase h3{margin:0 0 4px}
+.phase ul{margin:4px 0 0 18px;padding:0}.phase li{margin:2px 0}
+.chk{color:#3a9d5d}.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.card{border:1px solid var(--border);background:var(--card);border-radius:10px;padding:10px 12px}
+.yes{color:#3a9d5d;font-weight:600}.no{color:var(--muted-foreground)}.maybe{color:#c98a1b;font-weight:600}
+code{font-size:12px}
+</style></head><body><div style="font-size:12px;opacity:.7;margin-bottom:6px">Public copy: clients shown as [client]. Published 2026-11-27 00:05 ET · <a href="decisions.html">Decisions board</a></div>
+
+<div class="tabs">
+ <button class="tab on" data-t="map">1 · System map</button>
+ <button class="tab" data-t="flows">2 · Flows</button>
+ <button class="tab" data-t="road">3 · Roadmap</button>
+ <button class="tab" data-t="roles">4 · Who sees what</button>
+ <button class="tab" data-t="prac">5 · Practices → workstreams</button>
+ <button class="tab" data-t="ext">6 · New ideas: will they fit?</button>
+ <button class="tab" data-t="calc">7 · Screen-capture cost</button>
+</div>
+
+<!-- MAP -->
+<div class="pane on" id="map">
+<p>Seven layers, top to bottom: things happen, get captured once, land on an event timeline, are stored as facts and documents, are served through one <b>Brain API</b>, are worked on by agents, and are shown through front ends launched from one home page. <span class="muted">Click any box for detail. The colour dot shows status.</span></p>
+<div class="legend"><span><i class="st-exists"></i>exists today</span><span><i class="st-partial"></i>partly built</span><span><i class="st-planned"></i>planned (on the roadmap)</span><span><i class="st-idea"></i>idea, not yet planned</span></div>
+<div id="svgwrap"></div>
+<div class="panel" id="detail"><span class="muted">Select a component.</span></div>
+</div>
+
+<!-- FLOWS -->
+<div class="pane" id="flows">
+<p>Pick a flow to light up its path on the map and read the steps.</p>
+<div class="flows" id="flowbtns"></div>
+<div id="svgwrap2"></div>
+<div class="panel" id="flowdetail"></div>
+</div>
+
+<!-- ROADMAP -->
+<div class="pane" id="road">
+<p>The board's roadmap, updated with what was decided and built on 11/25–11/26. <span class="pill p-done">done</span> <span class="pill p-now">in progress / next up</span> <span class="pill p-next">planned</span> <span class="pill p-dec">needs a decision</span></p>
+<div id="phases"></div>
+<h3>Decisions still open</h3>
+<table id="decs"><thead><tr><th>Decision</th><th>Who</th><th>Blocks</th></tr></thead><tbody></tbody></table>
+</div>
+
+<!-- ROLES -->
+<div class="pane" id="roles">
+<p>Every front end is a tile on the home page. Which tiles a person sees, and what each tile shows them, comes from their role. The matrix below is a <b>first draft to argue with</b>: you said role access per front end is still to be decided, and so is whether Open Threads filters by owner.</p>
+<table id="rolet"></table>
+<p class="muted" style="margin-top:8px">Permission is checked in the Brain API on every request, using four inputs: <b>role</b> (Executive / Privileged / Regular), <b>client scope</b> (which clients the person works on), <b>workflow scope</b> (the recruitment front end never reads finance, for example) and the <b>sensitivity label</b> on each row. The tiles only decide what a person can open; the API decides what they can see inside it. Adding a front end or a role means adding config rows, not changing the architecture.</p>
+</div>
+
+<!-- PRACTICES -->
+<div class="pane" id="prac">
+<p>The 22 practices from the references overlap, as you noticed. They fold into <b>8 workstreams</b>. "Ready" means it can be built as described. "Design first" means a few decisions are needed before building.</p>
+<table id="pract"><thead><tr><th style="width:18%">Workstream</th><th style="width:22%">Practices it absorbs (# from the earlier artifact)</th><th style="width:10%">Readiness</th><th>What has to be decided or designed first</th><th style="width:12%">Roadmap slot</th></tr></thead><tbody></tbody></table>
+</div>
+
+<!-- EXTENSIONS -->
+<div class="pane" id="ext">
+<h3>Short answer: you don't need to settle every idea now.</h3>
+<p>The architecture has <b>five sockets</b>. Almost any new idea plugs into one or more of them without changing the core:</p>
+<table><thead><tr><th>Socket</th><th>What plugs in</th><th>What it costs to add one</th></tr></thead><tbody>
+<tr><td><b>Source → collector</b></td><td>any new stream of information</td><td>one collector that writes <code>events</code> (and media refs) with a stable upstream id</td></tr>
+<tr><td><b>Workflow (agent job)</b></td><td>anything that reads events and produces something</td><td>one job on the queue, with its own findings file and eval cases</td></tr>
+<tr><td><b>Front end</b></td><td>any new screen, bot, app or hotkey</td><td>an API client plus a tile and a role rule</td></tr>
+<tr><td><b>Outbound connector</b></td><td>pushing results into another system (TimeCamp, Asana, email)</td><td>one writer behind the API's human-approval rule</td></tr>
+<tr><td><b>Media tier</b></td><td>new kinds of files and how long to keep them</td><td>a lifecycle rule (holding → hot → cold → delete)</td></tr>
+</tbody></table>
+<p><b>Four things are expensive to change later</b>, so they should be right in Phase 2 even before every idea is known:</p>
+<ol class="steps">
+<li><b>The event schema.</b> Every event records who did it, when it happened, when we learned of it, through which channel, about which entities, plus a sensitivity label and source links. Get this generic and every new source fits.</li>
+<li><b>Identity and permissions.</b> Role × client × workflow × label, checked in the API. Adding front ends or roles is then config.</li>
+<li><b>Consent and ownership of personal capture.</b> Data a person captures about themselves (screen, phone, WhatsApp) is <i>theirs first</i>, private by default, and released by them.</li>
+<li><b>Media lifecycle.</b> Video and images get a tier and an expiry from day one, so storage costs stay predictable as capture grows.</li>
+</ol>
+<p><b>What <i>would</i> force an architecture change:</b> needing sub-second real-time behaviour everywhere (the design is minutes, not milliseconds); letting <b>clients</b> log in (that's multi-tenant auth, a bigger step); or holding regulated health data, which SSG does not have (confirmed 11/26). <b>Speed:</b> you need urgent items such as Nik's instructions in under 5 minutes; that fits, with webhooks or 1–3 minute polling for the urgent sources and an event-triggered job for each. Today the gap is the WhatsApp collector, which runs hourly. <b>Clients logging in</b> means outside people (Isaac, a candidate, a recruiter) having their own accounts to open a client page or player. Expiring share links don't need that; real accounts for outsiders do, and that's the bigger step.</p>
+
+<h3>Idea: a Bluey-style screen companion (Windows)</h3>
+<div class="grid2">
+<div class="card"><b>What Bluey actually is</b><p class="muted">A Mac menu-bar app and an iPhone app, written in Swift and released under the Unlicense (public domain), so anything can be reused. During a focus session it screenshots the main display every 30 s, sends a reduced JPEG plus the stated task to OpenAI, and nudges when you drift off task. It also has a point-and-ask cursor and voice input. <b>It is a focus tool, not a recorder.</b> It keeps no history of your day, and there is no Windows version, so for SSG it's a design reference, not code we can run.</p></div>
+<div class="card"><b>Verdict: it fits without changing the architecture</b><p class="muted">It touches four sockets: a new <b>source</b> (screen activity), new <b>workflows</b> (time assembly, clip routing), new <b>front ends</b> (snip and ask, the clip hotkey) and an <b>outbound connector</b> (TimeCamp). It becomes part of the <b>SSG Capture desktop app</b> already planned in Phase 6 (BrainCapture), not a separate product.</p></div>
+</div>
+<table style="margin-top:8px"><thead><tr><th>Your use</th><th>Socket</th><th>How it works in this architecture</th><th>Watch out for</th></tr></thead><tbody>
+<tr><td><b>1. Time tracking</b> → TimeCamp</td><td>source + workflow + outbound</td><td>The app samples the active window title, app and URL every few seconds (cheap; no model). Screenshots go only to short-lived holding storage, and local OCR turns them into text. The <b>time-assembly job</b> merges screen activity with WhatsApp, email, office-line calls, Otter and calendar <i>on the event timeline</i>. It produces "9:10–9:55 [client] fact sheet (screen: Word + WhatsApp with Aviva)" and posts a <b>draft</b> to TimeCamp for the person to approve.</td><td>Cost: sending every 30-second screenshot to a vision model is about 960 calls per person per day. Use local OCR and window titles, and call a model only to summarise blocks. <b>Consent:</b> NY Civil Rights Law §52-c requires written notice before electronically monitoring employees. Each person owns and releases their own data.</td></tr>
+<tr><td><b>2. Short clips</b> (Loom-style, hotkey, under 5 min)</td><td>front end + workflow + media tier</td><td>A hotkey records screen + mic. The clip goes to <b>holding</b> storage, then transcription; the API stores it as a document with a transcript and links it to the entities it mentions. The <b>clip-routing job</b> works out who it's for (e.g. "Mike, the [client] role sheet") and sends a link; any task in it becomes an Open Threads row. After N days it moves to hot, then cold storage.</td><td>Routing needs the clip's audience confirmed the first few times, before it is trusted to send by itself (the human-approval rule).</td></tr>
+<tr><td><b>3. Snip and ask</b></td><td>front end</td><td>A hotkey lets you drag a region. The image plus your question goes to the Brain API's ask endpoint, with the same permission check and context pack as every other front end.</td><td>Nothing special; it is just another Ask the Brain surface.</td></tr>
+<tr><td><b>4. Windows app</b></td><td>—</td><td>Fold it into the planned SSG Capture desktop app (WinUI 3; you have the Windows-app skills), next to the WhatsApp and Otter capture already planned there.</td><td>One app, one tray icon, one consent screen.</td></tr>
+</tbody></table>
+
+<h3>Idea: a temporal knowledge base, at company, team and person level</h3>
+<p><b>Today it only half happens.</b> The raw ledgers, <code>_brain-events.jsonl</code> and the <code>Timeline/</code> pages are in time order, and the pages are dated. But the synthesis is prose per subject, so "what happened, in what order, through which channel, across the company" can only be answered by an agent reading several pages and reassembling them. It also mixes up <i>when something happened</i> with <i>when we captured it</i>: the WhatsApp voice-note dating bug is exactly that.</p>
+<p><b>In the target design it is the spine, not a feature.</b> Every item becomes an <code>event</code> row carrying actor, channel, entities, <code>occurred_at</code> (when it happened) and <code>recorded_at</code> (when we learned of it). Facts carry <code>valid_from</code> / <code>valid_to</code>, so we can also ask what we believed on a given date. With that in place:</p>
+<ul>
+<li><b>Company level:</b> all events in order, filterable by channel.</li>
+<li><b>Team or client level:</b> the same, filtered by entity or client.</li>
+<li><b>Person level:</b> filtered by actor. Time tracking is this view turned into blocks.</li>
+<li><b>Episodes:</b> one job groups related events from different channels into one happening. The Zoom call, the WhatsApp right after it and the follow-up email become "Nik and Jeff settle the HR role, 11/24".</li>
+</ul>
+<p>These are queries, not separate systems. This is the one design point I'd add to Phase 2: <b>make <code>events</code> bi-temporal and channel-aware from the first table.</b> The board listed Graphiti as "probably skip"; that's still right, because Postgres covers it if the columns exist from the start.</p>
+</div>
+
+<!-- CALC -->
+<div class="pane" id="calc">
+<p>What a Bluey-style screen companion would cost in model fees. Prices are the published list prices as of 11/26/2026. Image cost uses Anthropic's estimate of about (width × height) ÷ 750 tokens per image, which is <b>an estimate, not a measurement</b>. Move the sliders.</p>
+<div class="grid2">
+<div class="card">
+<label>People using it <b id="v_p"></b><br><input type="range" id="i_p" min="1" max="10" value="5" style="width:100%"></label><br>
+<label>Hours on per day (timer or off when out) <b id="v_h"></b><br><input type="range" id="i_h" min="1" max="10" value="8" style="width:100%"></label><br>
+<label>Workdays per month <b id="v_d"></b><br><input type="range" id="i_d" min="4" max="23" value="21" style="width:100%"></label><br>
+<label>Screenshot every <b id="v_s"></b> seconds (approach A)<br><input type="range" id="i_s" min="10" max="300" step="10" value="30" style="width:100%"></label><br>
+<label>Screenshot size sent<br><select id="i_r"><option value="1229">1280×720 (≈1,229 tokens)</option><option value="786" selected>1024×576 (≈786 tokens)</option><option value="437">768×432 (≈437 tokens)</option></select></label>
+</div>
+<div class="card"><b>Approaches</b>
+<p><b>A · Bluey's way:</b> every screenshot goes to a vision model with a short prompt (≈500 tokens in, 80 out).</p>
+<p><b>B · Recommended:</b> the PC samples window titles and reads screen text locally (no model, no fee). Every 15 minutes, one text-only call summarises the block (≈4,000 tokens in, 300 out).</p>
+<p><b>C · B plus a picture every 5 minutes</b>, for evidence and for screens with no readable text.</p>
+<p class="muted">Clips: transcribed locally (free); one summary call per clip, which costs fractions of a cent.</p></div>
+</div>
+<table style="margin-top:10px" id="calct"><thead><tr><th>Model (list price per 1M tokens in / out)</th><th>Approach</th><th>Per person / day</th><th>All people / day</th><th>All people / month</th></tr></thead><tbody></tbody></table>
+<p class="muted" style="margin-top:6px">Storage: screenshots at about 120 KB each come to <b id="v_st"></b> per day for everyone at the A interval, kept in short-lived holding storage (e.g. 7 days) and then deleted. The text they produce is a few MB.</p>
+</div>
+
+<script>
+// ------------------------------------------------------------ data
+const LANES=[
+ {id:'src',label:'1 · Where things happen'},
+ {id:'cap',label:'2 · Capture (Mini + desktop app)'},
+ {id:'spine',label:'3 · Event spine'},
+ {id:'store',label:'4 · Storage'},
+ {id:'api',label:'5 · Brain API (the only door)'},
+ {id:'wf',label:'6 · Agent workflows'},
+ {id:'fe',label:'7 · Front ends (tiles on Home)'},
+];
+const N=[
+ // sources
+ {id:'s_mail',lane:'src',t:'Outlook mail + calendar',st:'exists',d:'Mike, admin@, Nik, Aviva and Joe mailboxes and calendars via the m365-exporter (Graph).',ph:'—',tech:'Graph, polled every 5 min'},
+ {id:'s_asana',lane:'src',t:'Asana',st:'exists',d:'~17,300 tasks incl. subtasks. Polled every 3 min, full snapshot 04:30.',ph:'—',tech:'Asana API'},
+ {id:'s_meet',lane:'src',t:'Online meetings (Grain → Vexa?)',st:'exists',d:'4,918 Grain meetings. Vexa (open source) is the candidate replacement after a ten-meeting test.',ph:'P6 test',tech:'Grain API; Vexa webhook'},
+ {id:'s_room',lane:'src',t:'Office Capture (room)',st:'exists',d:'Conference-room video and audio in 10-min chunks, Mon–Fri 08–19. 70.8 GB of chunks plus meetings. The NOTALK quarantine runs weekly from 11/29.',ph:'P6',tech:'ffmpeg agent on DESKTOP-RUQ42L4'},
+ {id:'s_otter',lane:'src',t:'Otter / phone calls',st:'partial',d:'Otter recordings (Mike; others planned). Office-line calls are not captured yet.',ph:'P6',tech:'Otter export'},
+ {id:'s_wa',lane:'src',t:'WhatsApp',st:'partial',d:'Mike\'s chats only (Nik declined). Each employee chooses their own chats in the desktop app.',ph:'P6',tech:'local snapshot'},
+ {id:'s_files',lane:'src',t:'OneNote + Drive',st:'exists',d:'1,721 OneNote pages; Drive index of 112,500 items.',ph:'—',tech:'Graph'},
+ {id:'s_screen',lane:'src',t:'Screen activity + clips',st:'planned',d:'Bluey-style: active-window sampling, screenshots to holding, hotkey clips. Feeds time tracking and instructions.',ph:'P6 (idea)',tech:'Windows capture app'},
+ // capture
+ {id:'c_sup',lane:'cap',t:'Mini supervisor + collectors',st:'exists',d:'scheduler.mjs + jobs.json runs 23 jobs: collectors, Brain passes, the rollover (03:40) and the chunk quarantine (Sun 06:30). Each collector writes an event when something new arrives.',ph:'P1',tech:'Node supervisor, Windows'},
+ {id:'c_app',lane:'cap',t:'SSG Capture desktop app',st:'planned',d:'One Windows tray app per employee: their own WhatsApp, Otter, screen activity, clip hotkey and snip-and-ask, plus one consent screen. Private by default; the person releases what goes to the brain.',ph:'P6',tech:'WinUI 3'},
+ {id:'c_label',lane:'cap',t:'Labeller (sensitivity)',st:'planned',d:'Labels every item General / Restricted / Private, and separately client data vs SSG-internal, before it is stored. Presidio for salaries, account numbers and names; the M365 block list for Nik\'s mail.',ph:'P2',tech:'Presidio + rules'},
+ {id:'c_tx',lane:'cap',t:'Transcription + speakers',st:'partial',d:'Whisper / silero VAD in BrainCapture today; pyannote voice profiles for speaker names.',ph:'P6',tech:'faster-whisper, pyannote'},
+ {id:'c_hc',lane:'cap',t:'Healthchecks',st:'planned',d:'Every job pings its own link when it finishes; a late ping raises an alert. Fills the biggest gap: nothing alerts on failure today.',ph:'P1',tech:'healthchecks.io (free 20)'},
+ // spine
+ {id:'e_events',lane:'spine',t:'events (bi-temporal)',st:'partial',d:'One row per thing that happened: actor, channel, entities, occurred_at, recorded_at, label, source link. Today: _brain-events.jsonl plus the ledgers. This is the temporal knowledge base.',ph:'P2',tech:'Postgres table'},
+ {id:'e_queue',lane:'spine',t:'Job queue',st:'planned',d:'A new event starts the right job: summary, fact sheet, thread extraction. Today the supervisor polls; later Supabase triggers.',ph:'P2',tech:'Supabase/pg queue'},
+ {id:'e_epis',lane:'spine',t:'Episode builder',st:'planned',d:'Groups events from different channels into one happening (call + WhatsApp + email → one episode). Drives timelines and time tracking.',ph:'P3',tech:'job'},
+ // store
+ {id:'d_ent',lane:'store',t:'Entities',st:'planned',d:'Clients, people, candidates, roles, projects. Seeded from Asana\'s Client field (74 values).',ph:'P2',tech:'Postgres'},
+ {id:'d_facts',lane:'store',t:'Facts + threads',st:'planned',d:'Typed facts with valid_from/valid_to, source and source_rank (rule F/E). Threads are the open items; the 527 OT rows from 11/26 seed them.',ph:'P2',tech:'Postgres'},
+ {id:'d_docs',lane:'store',t:'Documents + search',st:'planned',d:'Transcripts, emails, pages, dossiers, chunked with embeddings for hybrid search.',ph:'P2',tech:'Postgres FTS + pgvector'},
+ {id:'d_restr',lane:'store',t:'Restricted store',st:'planned',d:'SSG\'s own salaries, finance and HR. Separate schema or database (possibly local); only the Executive route reads it.',ph:'P2',tech:'separate schema/db'},
+ {id:'d_media',lane:'store',t:'Media tiers',st:'partial',d:'Video, audio, screenshots, clips: holding → hot → cold → delete. Today everything is in OneDrive (87.5 GB). Target R2 or B2 with signed expiring links; the timing is to be agreed with Joe.',ph:'P2 pilot',tech:'R2 / B2'},
+ {id:'d_vault',lane:'store',t:'Vault / markdown export',st:'exists',d:'The Obsidian vault, v2 shape since 11/26: Current state, the last 7 days, Archive. After P3 it becomes an export generated from the store.',ph:'—',tech:'files'},
+ // api
+ {id:'a_api',lane:'api',t:'Brain API',st:'planned',d:'Every front end and agent goes through here. The store behind it is swappable because nothing else touches it.',ph:'P3',tech:'HTTP service'},
+ {id:'a_perm',lane:'api',t:'Permission check',st:'planned',d:'Role × client scope × workflow scope × label, on every read and write. A missing label fails closed.',ph:'P3',tech:'in API (+RLS backstop)'},
+ {id:'a_ctx',lane:'api',t:'Retrieval + context pack',st:'planned',d:'Hybrid search, entity resolution, the source-wins rule (F, flagging per E) and a small cited context pack per question.',ph:'P3',tech:'in API'},
+ {id:'a_mcp',lane:'api',t:'MCP server',st:'planned',d:'The same API exposed to Claude desktop, Cowork, Claude Code and Hermes, replacing folder access.',ph:'P3',tech:'MCP'},
+ // workflows
+ {id:'w_syn',lane:'wf',t:'Synthesis',st:'exists',d:'Hourly and 5 AM Brain passes. Since 11/26 they rewrite each page\'s Current state block in place; later they write facts and threads.',ph:'—',tech:'Claude on the Mini'},
+ {id:'w_chk',lane:'wf',t:'Checker agent',st:'partial',d:'A second agent compares each draft with its sources (audits exist as tools today). Failures are fixed or flagged.',ph:'P2',tech:'Claude + eval set'},
+ {id:'w_brief',lane:'wf',t:'Morning brief',st:'partial',d:'Per person: their threads, their day, what changed. The deep pass writes a report today, but it isn\'t delivered anywhere.',ph:'P4',tech:'job'},
+ {id:'w_time',lane:'wf',t:'Time assembly → TimeCamp',st:'planned',d:'Every 30 min Claude merges the local screen extracts (app, window, URL, on-screen text, PC-clock timestamps) and a screenshot every 5 min with WhatsApp, calls, email and calendar, then writes the time entries into TimeCamp, marked as auto-entered so the person can correct them. Each person consents at install and can switch it off or set a timer. About $3.25/month for 5 people.',ph:'P6 (confirmed shape 11/27)',tech:'local extractor + Haiku + TimeCamp API (a token per person)'},
+ {id:'w_route',lane:'wf',t:'Clip / instruction router',st:'idea',d:'Works out who a clip or instruction is for, sends it, and opens a thread row.',ph:'P6 (idea)',tech:'job'},
+ {id:'w_learn',lane:'wf',t:'Learning loop',st:'planned',d:'A daily agent log (worked on / learned / decided / open), a findings file per workflow, a weekly lint/janitor job and an eval set (Langfuse).',ph:'P1.5',tech:'files → DB'},
+ // front ends
+ {id:'f_home',lane:'fe',t:'Home (launcher)',st:'planned',d:'One page after Microsoft 365 sign-in, showing only the tiles your role allows.',ph:'P4',tech:'web app'},
+ {id:'f_ask',lane:'fe',t:'Ask the Brain',st:'exists',d:'Plugin 0.4.0 (Cowork) + claude.ai Project today. Target: MCP, Teams/phone bot, snip-and-ask.',ph:'P3',tech:'plugin → API'},
+ {id:'f_threads',lane:'fe',t:'Open Threads',st:'partial',d:'Parked: it will be the front end on threads in the store. The prototype exists; a table v2 has been in the vault since 11/26.',ph:'P5',tech:'web'},
+ {id:'f_recruit',lane:'fe',t:'Recruitment',st:'partial',d:'One candidate pipeline mirrored to Asana; a recruiter view scoped to its clients.',ph:'P5',tech:'web'},
+ {id:'f_ctrl',lane:'fe',t:'Controls',st:'planned',d:'Roles, block list, Nik\'s review inbox, consent overview.',ph:'P4',tech:'web'},
+ {id:'f_player',lane:'fe',t:'Capture player',st:'partial',d:'Transcript-linked video with share links (the Office Capture review UI exists).',ph:'P6',tech:'web'},
+ {id:'f_pages',lane:'fe',t:'Pages (Stratpad)',st:'planned',d:'Candidate and client workspaces with AI actions.',ph:'P7',tech:'web'},
+ {id:'f_health',lane:'fe',t:'Health',st:'planned',d:'Job status, data freshness, failures, cost.',ph:'P4',tech:'web'},
+ {id:'f_desk',lane:'fe',t:'Desktop hotkeys',st:'idea',d:'Snip and ask; record a clip; "what am I working on" overlay. Part of the capture app.',ph:'P6 (idea)',tech:'WinUI 3'},
+];
+const E=[
+ ['s_mail','c_sup'],['s_asana','c_sup'],['s_meet','c_sup'],['s_room','c_sup'],['s_otter','c_app'],['s_otter','c_sup'],['s_wa','c_app'],['s_files','c_sup'],['s_screen','c_app'],
+ ['c_sup','c_label'],['c_app','c_label'],['s_room','c_tx'],['s_meet','c_tx'],['c_tx','c_label'],['c_sup','c_hc'],
+ ['c_label','e_events'],['e_events','e_queue'],['e_events','e_epis'],
+ ['e_events','d_docs'],['e_epis','d_facts'],['c_label','d_restr'],['c_app','d_media'],['s_room','d_media'],
+ ['e_queue','w_syn'],['e_queue','w_chk'],['e_queue','w_route'],['e_epis','w_time'],
+ ['w_syn','d_facts'],['w_syn','d_vault'],['w_chk','d_facts'],['w_route','d_facts'],
+ ['d_ent','a_api'],['d_facts','a_api'],['d_docs','a_api'],['d_restr','a_api'],['d_media','a_api'],
+ ['a_api','a_perm'],['a_api','a_ctx'],['a_api','a_mcp'],
+ ['a_ctx','w_brief'],['a_ctx','w_time'],['w_learn','w_syn'],['w_learn','w_chk'],
+ ['a_perm','f_home'],['a_mcp','f_ask'],['a_ctx','f_ask'],['a_perm','f_threads'],['a_perm','f_recruit'],['a_perm','f_ctrl'],['a_perm','f_player'],['a_perm','f_pages'],['a_perm','f_health'],['a_ctx','f_desk'],['w_brief','f_home'],['w_time','f_home'],['w_route','f_threads'],['c_hc','f_health'],['d_vault','f_ask'],
+];
+const FLOWS=[
+ {k:'nik',t:'Nik gives a direction → Open Threads',path:['s_wa','c_app','c_label','e_events','e_queue','w_syn','w_chk','d_facts','a_api','a_perm','f_threads','w_brief','f_home'],
+  steps:['Nik says it anywhere: a WhatsApp, a meeting, an email.','The collector or capture app records it within minutes. The labeller tags it General, client: [client].','It lands as an event (actor Nik, channel WhatsApp, occurred_at = the time sent).','The queue starts the thread extractor: an action, its owner and the next step.','The checker compares the extracted action with the original message.','A thread row is created or updated, citing the source.','The owner sees it in Open Threads and in tomorrow\'s brief; an alert offers do, delay or delegate.']},
+ {k:'int',t:'Candidate interview → fact sheet → client',path:['s_meet','c_sup','c_tx','c_label','e_events','e_queue','w_syn','w_chk','d_docs','a_api','a_perm','f_recruit','f_ctrl'],
+  steps:['Grain (or Vexa) finishes the transcript.','A collector event starts the fact-sheet job.','Claude drafts the post-interview fact sheet.','The checker compares every line with the transcript; a failure is fixed or flagged to Mike.','The fact sheet is stored as a document linked to the candidate and the client.','It appears in Recruitment and in Nik\'s review inbox (Controls).','Nik approves → the outbound connector sends it to the client.']},
+ {k:'ask',t:'Someone asks the brain',path:['f_ask','a_mcp','a_api','a_perm','a_ctx','d_facts','d_docs','d_ent'],
+  steps:['A question arrives from any front end: Cowork, phone, Teams or snip-and-ask.','The API identifies the person and their role, clients and workflow.','Retrieval finds the entity, searches facts and documents, and drops anything the person may not see.','The source-wins rule (F) settles conflicts and flags E-type ones.','A small cited context pack goes to the model, and the answer comes back with sources.']},
+ {k:'time',t:'Screen + calls + chats → time tracking',path:['s_screen','s_otter','s_wa','s_mail','c_app','c_sup','c_label','e_events','e_epis','w_time','a_ctx','f_home'],
+  steps:['During the day the PC extracts locally: app, window title, URL, on-screen text, timestamps from the PC clock; plus one screenshot every 5 min.','All land as events on the person\'s own timeline, alongside calls, WhatsApps, emails and calendar.','Every 30 min Claude groups them into time blocks, e.g. "9:10–9:55 [client] fact sheet".','It writes those blocks straight into TimeCamp, marked as auto-entered, with evidence links.','The person corrects anything wrong in TimeCamp; corrections feed the learning loop.']},
+ {k:'clip',t:'Hotkey clip → the right person',path:['f_desk','c_app','d_media','c_tx','e_events','e_queue','w_route','d_facts','a_perm','f_threads'],
+  steps:['Nik presses the hotkey and records under 5 minutes of screen and voice.','The clip goes to holding storage and gets a transcript.','The router works out the audience and the task ("Mike: update the [client] role sheet").','It sends a link, after confirmation in the first weeks, and opens a thread row.','Lifecycle: holding → hot (N days) → cold → delete, unless pinned.']},
+ {k:'room',t:'Room recording → meeting, silence removed',path:['s_room','c_tx','c_sup','e_events','d_media','e_queue','w_syn','f_player'],
+  steps:['The agent records 10-min chunks; the Mini scans each one for talk.','Speech blocks are cut into meetings and candidates, which become events.','Chunks with no talk picked up, unreferenced and 7+ days old, are quarantined every Sunday; the quarantine is purged after 30 days.','Meetings move to media storage; the player links video to transcript.']},
+ {k:'fail',t:'A job fails',path:['c_sup','c_hc','f_health','w_learn'],
+  steps:['A job doesn\'t ping Healthchecks on time.','An alert goes to the chosen channel (still to decide).','Health shows the job, its last success and the effect on data freshness.','The fix and its lesson go into the workflow\'s findings file; the weekly janitor checks it stays fixed.']},
+];
+// ------------------------------------------------------------ map renderer
+function buildMap(wrapId, clickable){
+ const W=960, laneH=86, top=8, boxH=44, padX=8;
+ const H=top+LANES.length*laneH+6;
+ const pos={};
+ let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block">`;
+ LANES.forEach((l,i)=>{
+  const y=top+i*laneH; svg+=`<rect class="lane" x="1" y="${y}" width="${W-2}" height="${laneH-6}" rx="8"/><text class="lanelab" x="10" y="${y+14}">${l.label}</text>`;
+  const ns=N.filter(n=>n.lane===l.id); const bw=(W-20-padX*(ns.length-1))/ns.length;
+  ns.forEach((n,j)=>{const x=10+j*(bw+padX), yy=y+22; pos[n.id]={x:x+bw/2,y:yy,yb:yy+boxH,x0:x,w:bw};});
+ });
+ let edges='';
+ E.forEach(([a,b],i)=>{const p=pos[a],q=pos[b]; if(!p||!q)return; const y1=p.yb, y2=q.y; const my=(y1+y2)/2;
+   const dpath = y2>y1 ? `M${p.x},${y1} C${p.x},${my} ${q.x},${my} ${q.x},${y2}` : `M${p.x},${p.y+boxH/2} C${p.x+40},${p.y-30} ${q.x-40},${q.y-30} ${q.x},${q.y+boxH/2}`;
+   edges+=`<path class="edge" data-a="${a}" data-b="${b}" d="${dpath}"/>`;});
+ svg+=edges;
+ N.forEach(n=>{const p=pos[n.id]; const fs=p.w<105?10.5:11.5; const words=n.t.split(' '); const lines=[]; let cur='';
+  const maxc=Math.floor(p.w/(fs*0.56));
+  words.forEach(w=>{ if((cur+' '+w).trim().length>maxc){lines.push(cur.trim()); cur=w;} else cur+=' '+w;}); lines.push(cur.trim());
+  const ly=p.y+boxH/2-(lines.length-1)*6.5+4;
+  svg+=`<g class="node" data-id="${n.id}"><rect x="${p.x0}" y="${p.y}" width="${p.w}" height="${boxH}" rx="7"/><circle class="st-${n.st}" cx="${p.x0+p.w-7}" cy="${p.y+7}" r="3.5"/>`+
+   lines.slice(0,3).map((t,k)=>`<text x="${p.x}" y="${ly+k*13}" text-anchor="middle" font-size="${fs}" fill="currentColor">${t}</text>`).join('')+`</g>`;});
+ svg+='</svg>';
+ const wrap=document.getElementById(wrapId); wrap.innerHTML=svg; wrap.style.color='var(--foreground)';
+ return wrap;
+}
+function highlight(wrap, ids, edgesOnPath){
+ const set=new Set(ids);
+ wrap.querySelectorAll('.node').forEach(g=>g.classList.toggle('dim', ids.length && !set.has(g.dataset.id)));
+ wrap.querySelectorAll('.edge').forEach(e=>{const on=edgesOnPath(e.dataset.a,e.dataset.b); e.classList.toggle('hot',on); e.classList.toggle('dim', ids.length && !on);});
+}
+const STL={exists:'exists today',partial:'partly built',planned:'planned',idea:'idea, not yet planned'};
+const m1=buildMap('svgwrap',true);
+m1.querySelectorAll('.node').forEach(g=>g.onclick=()=>{
+ const n=N.find(x=>x.id===g.dataset.id);
+ m1.querySelectorAll('.node').forEach(x=>x.classList.toggle('sel',x===g));
+ const nb=new Set([n.id]); E.forEach(([a,b])=>{if(a===n.id)nb.add(b); if(b===n.id)nb.add(a);});
+ highlight(m1,[...nb],(a,b)=>a===n.id||b===n.id);
+ const ins=E.filter(e=>e[1]===n.id).map(e=>N.find(x=>x.id===e[0]).t), outs=E.filter(e=>e[0]===n.id).map(e=>N.find(x=>x.id===e[1]).t);
+ document.getElementById('detail').innerHTML=`<b class="t">${n.t}</b> <span class="muted">· ${STL[n.st]}</span><p>${n.d}</p><div class="kv"><div>Technology</div><div>${n.tech}</div><div>Roadmap</div><div>${n.ph}</div><div>Fed by</div><div>${ins.join(', ')||'—'}</div><div>Feeds</div><div>${outs.join(', ')||'—'}</div></div>`;
+});
+// flows
+const m2=buildMap('svgwrap2',false);
+const fb=document.getElementById('flowbtns');
+FLOWS.forEach((f,i)=>{fb.insertAdjacentHTML('beforeend',`<button class="fl" data-k="${f.k}">${f.t}</button>`)});
+function showFlow(k){const f=FLOWS.find(x=>x.k===k);
+ fb.querySelectorAll('.fl').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+ const idx={}; f.path.forEach((id,i)=>idx[id]=i);
+ highlight(m2,f.path,(a,b)=>a in idx && b in idx);
+ document.getElementById('flowdetail').innerHTML=`<b class="t">${f.t}</b><ol class="steps">${f.steps.map(s=>`<li>${s}</li>`).join('')}</ol>`;}
+fb.querySelectorAll('.fl').forEach(b=>b.onclick=()=>showFlow(b.dataset.k)); showFlow('nik');
+// tabs
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));});
+
+// ------------------------------------------------------------ roadmap
+const PH=[
+ {t:'Phase 1 · Stabilize the Mini (close it out)',w:'now – mid Dec',items:[
+  ['done','Vault v2: Current state + 7 days + Archive; nightly rollover job; Home rebuilt; 71 .bak files cleared (11/26)'],
+  ['done','Ask the Brain plugin 0.4.0 built (v2 pages, source-wins rule F/E, dossier picker); <b>install pending, by drag-in</b>'],
+  ['done','Office Capture no-talk cleanup: 606 chunks (40.8 GB) deleted 11/26; keeps 1 buffer chunk either side of talk; recurring job runs Sundays 06:30 (daily switch awaiting approval)'],
+  ['later','Note: the conference-room PC\'s OneDrive has not uploaded since 11/23 09:10, so 11/23–11/25 chunks exist only on that PC (Mike to address later)'],
+  ['now','Healthchecks on every job + an alert channel for failures and the morning report'],
+  ['now','Dedicated service account on the Mini; one OneDrive client (Michael\'s account decision)'],
+  ['now','Code to GitHub (SSGAdmin1800/ssg-brain); one Skills source + PROTOCOL.md for every agent'],
+ ]},
+ {t:'Phase 1.5 · Agent learning loop (on today\'s files)',w:'Dec',items:[
+  ['next','Daily agent log: each Claude job appends worked on / learned / decided / still open'],
+  ['next','A findings file per workflow (hourly pass, Grain summaries, fact sheets, recruitment intake); audits write into them'],
+  ['next','Eval set from the 11/22 and 11/24 audit findings; Langfuse comparison of Opus vs Sonnet/Haiku per step (cost)'],
+  ['next','Weekly lint/janitor: stale Current state blocks, orphan pages, contradictions, dormant threads, failing jobs'],
+ ]},
+ {t:'Phase 2 · Data spine',w:'Dec – Jan',items:[
+  ['dec','Before starting: the role matrix, what counts as SSG-internal salary/finance/HR, what happens to unlabelled rows'],
+  ['next','Latency tiers: urgent sources (Nik\'s instructions, WhatsApp, email) captured and processed within 5 minutes by webhook or 1–3 min polling; everything else hourly or nightly'],
+  ['next','Supabase project under the admin account (Mike adds the key himself)'],
+  ['next','Schema: entities, <b>events (bi-temporal, channel-aware)</b>, facts (valid_from/to, source_rank), threads, documents + embeddings, labels; restricted store separate'],
+  ['next','Loaders: Asana, calendar, Drive, Grain, OneNote first; then email (keyed on internetMessageId), WhatsApp (date repair), Otter'],
+  ['next','Labeller at capture (Presidio + rules); nightly export + rclone backup'],
+  ['dec','Media storage pilot (R2/B2): agree timing and process with Joe'],
+ ]},
+ {t:'Phase 3 · Brain API + Ask the Brain v2',w:'Jan – Feb',items:[
+  ['next','Brain API: search, entity resolution, permission check, context pack, source-wins F/E, write endpoints'],
+  ['next','MCP server → plugin 1.0 points at the API (no folder access needed); phone/Teams bot'],
+  ['next','Synthesis writes facts and threads; Current-state pages regenerated from the store (the vault becomes an export)'],
+  ['next','Episode builder → company, team and person timelines'],
+ ]},
+ {t:'Phase 4 · Home, roles, controls',w:'Feb – Mar',items:[
+  ['next','Microsoft 365 sign-in; Home launcher with role-gated tiles'],
+  ['next','Controls (roles, block list, Nik\'s review inbox, consent); Health'],
+  ['next','Morning brief per person, delivered to the chosen channel'],
+ ]},
+ {t:'Phase 5 · Work front ends',w:'Mar – Apr',items:[
+  ['next','Recruitment: one pipeline, recruiter views scoped by client, Asana mirror'],
+  ['next','Open Threads redesigned on the threads table (owner filtering decided here)'],
+ ]},
+ {t:'Phase 6 · Capture expansion',w:'Q2',items:[
+  ['next','Office Capture → events + media storage; player with share links; Vexa vs Grain ten-meeting test'],
+  ['next','SSG Capture desktop app (Windows): own WhatsApp, Otter, consent screen'],
+  ['next','Screen companion (confirmed shape): local extraction (app, window, URL, OCR, PC clock) + a screenshot every 5 min to Haiku; every 30 min Claude merges with the other timelines and writes the TimeCamp entries (marked auto, editable); consent at install, on/off and timer'],
+  ['later','<i>Idea:</i> hotkey clips + router; snip and ask'],
+ ]},
+ {t:'Phase 7 · Pages (Stratpad)',w:'later',items:[['later','Candidate page first, then client workspaces with AI actions']]},
+];
+const PL={done:'done',now:'next up',next:'planned',later:'later',dec:'decision'};
+const PC={done:'p-done',now:'p-now',next:'p-next',later:'p-later',dec:'p-dec'};
+document.getElementById('phases').innerHTML=PH.map(p=>`<div class="phase"><h3>${p.t} <span class="muted" style="font-weight:400;font-size:12px">· ${p.w}</span></h3><ul>${p.items.map(i=>`<li><span class="pill ${PC[i[0]]}">${PL[i[0]]}</span> ${i[1]}</li>`).join('')}</ul></div>`).join('');
+const DEC=[
+ ['Alert channel for job failures and the morning report (email from admin@, Asana task, phone push)','Mike','Healthchecks, morning brief'],
+ ['Michael\'s Windows account on the Mini: stop signing in, or stop its OneDrive','Mike','one OneDrive client'],
+ ['Role matrix: which tiles and what data per role; whether Open Threads filters by owner','Mike + Nik','Phase 2 schema, Phase 4'],
+ ['What counts as SSG-internal salary / finance / HR; unlabelled rows','Mike + Nik','loaders, restricted store'],
+ ['Media move: when and how; R2 vs B2','Mike + Joe','Phase 2 media pilot'],
+ ['Supabase plan; app hosting (Vercel Pro or other)','Mike','Phase 2–4'],
+ ['Personal capture consent policy (written notice per NY §52-c; private-by-default)','Mike + Nik','desktop app, time tracking'],
+];
+document.querySelector('#decs tbody').innerHTML=DEC.map(d=>`<tr><td>${d[0]}</td><td>${d[1]}</td><td class="muted">${d[2]}</td></tr>`).join('');
+
+// ------------------------------------------------------------ roles
+const ROLES=['Executive','Privileged','Regular','Recruiter (outside)'];
+const TILES=[
+ ['Ask the Brain',['yes','yes','yes','maybe'],'Answers are filtered by the same permission check; a recruiter sees only their clients\' roles'],
+ ['Open Threads',['yes','yes','maybe','no'],'Regular: own threads plus their team\'s? (to decide)'],
+ ['Recruitment',['yes','yes','maybe','maybe'],'Outside recruiters: their submissions and owed replies only'],
+ ['Controls',['yes','no','no','no'],'Roles, block list, review inbox, consent'],
+ ['Health',['yes','maybe','no','no'],'Maybe Mike only, plus executives'],
+ ['Morning brief',['yes','yes','yes','no'],'Always personal: your threads, your day'],
+ ['Capture player',['yes','yes','maybe','no'],'Per-clip share links for clients'],
+ ['Pages (Stratpad)',['yes','yes','maybe','no'],'Per client scope'],
+ ['Time tracking review',['yes','yes','yes','no'],'Everyone sees only their own; executives see team totals?'],
+];
+const sym={yes:'<span class="yes">✓</span>',no:'<span class="no">—</span>',maybe:'<span class="maybe">?</span>'};
+document.getElementById('rolet').innerHTML=`<thead><tr><th>Front end (tile)</th>${ROLES.map(r=>`<th>${r}</th>`).join('')}<th>Notes</th></tr></thead><tbody>`+TILES.map(t=>`<tr><td><b>${t[0]}</b></td>${t[1].map(x=>`<td>${sym[x]}</td>`).join('')}<td class="muted">${t[2]}</td></tr>`).join('')+`</tbody>`;
+
+// ------------------------------------------------------------ practices
+const PR=[
+ ['Shared protocol & skills','#7 shared skills, #8 one shared memory','Ready','Nothing. One Skills folder in the repo, a PROTOCOL.md, and a one-line pointer in each agent. It depends only on the GitHub step.','P1'],
+ ['Agent learning loop','#5 daily logs, #6 findings files, #13 knowledge vs memory, #14 morning brief','Ready','Only the alert channel for the brief. The 4-line log format and findings files can start on the current vault.','P1.5'],
+ ['Ops health','#15 health check / janitor, #22 freshness','Ready','The alert channel. Healthchecks plus a weekly janitor report.','P1 / P1.5'],
+ ['Context & retrieval','#3 vault map, #9 small context, #10 compile/lint, #11 file answers back','Done for the files (11/26); design for the DB','The context-pack format and size cap, and per-workflow "context recipes" (what a fact-sheet job reads vs an Ask question).','P3'],
+ ['Truth & time','#18 source hierarchy, #22 owner + freshness, temporal KB','Rule chosen (F, plus E flags)','Grow the 6 test cases to 20–30 real ones; decide which facts expire (meeting times yes, a client\'s industry no); bi-temporal events in the schema.','P2'],
+ ['Access control','#2 three access levels, #19 client isolation, #17 human approval','Design first','The role matrix (tab 4), the client-scope rules for recruiters and staff, the definition of SSG-internal, and the consent model for personal capture.','P2 → P4'],
+ ['Human vs agent zones','#1 human zone','Design first','Nobody opens Obsidian, so a "Human/" folder would go unused. Better: tag human-authored items (Nik\'s directions, Mike\'s decisions, corrections) at capture as <code>author_type = human</code>. Agents may cite them but never rewrite them. Decide where people write standing rules: a form, chat, or a Controls screen.','P2'],
+ ['Front ends where people work','#16 act, not just show, #20 Teams/phone, #21 one backend many surfaces','Design first (after the API)','Which channel: Teams vs WhatsApp vs Telegram; the auth on a phone bot; the write actions that need approval.','P3 → P4'],
+ ['Versioning & undo','#12 git / version control','Partly done','Snapshots exist for the vault; in the DB, append-only events and versioned facts give the same thing.','P2'],
+];
+document.querySelector('#pract tbody').innerHTML=PR.map(r=>`<tr><td><b>${r[0]}</b></td><td class="muted">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
+
+// ------------------------------------------------------------ calculator
+const MODELS=[['Claude Haiku 5.5',0.10,0.50],['Gemini 3.5 Flash-Lite',0.30,2.50],['Gemini 3.8 Flash',0.75,3.75],['Claude Sonnet 5.5',2,10],['Claude Opus 5.5',4,20]];
+function money(x){return x<0.01?'<$0.01':'$'+(x<10?x.toFixed(2):x.toFixed(0))}
+function calc(){
+ const P=+i_p.value,H=+i_h.value,D=+i_d.value,S=+i_s.value,R=+i_r.value;
+ v_p.textContent=P;v_h.textContent=H;v_d.textContent=D;v_s.textContent=S;
+ const shotsA=H*3600/S, blocks=H*4, shotsC=H*12;
+ v_st.textContent=(P*shotsA*0.12/1000).toFixed(2)+' GB';
+ let rows='';
+ MODELS.forEach(m=>{
+  const ci=m[1]/1e6, co=m[2]/1e6;
+  const A=shotsA*((R+500)*ci+80*co), B=blocks*(4000*ci+300*co), C=B+shotsC*((R+300)*ci+60*co);
+  [['A',A],['B',B],['C',C]].forEach(([k,v],i)=>{rows+=`<tr><td>${i===0?`<b>${m[0]}</b> <span class="muted">$${m[1]} / $${m[2]}</span>`:''}</td><td>${k}</td><td>${money(v)}</td><td>${money(v*P)}</td><td><b>${money(v*P*D)}</b></td></tr>`});
+ });
+ document.querySelector('#calct tbody').innerHTML=rows;
+}
+['i_p','i_h','i_d','i_s','i_r'].forEach(id=>document.getElementById(id).oninput=calc); calc();
+</script>
+</body></html>

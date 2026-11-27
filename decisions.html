@@ -1,0 +1,118 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>SSG Brain: decisions</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{--foreground:#1d1d1f;--muted-foreground:#6b6b70;--border:#d9d9de;--card:#f6f6f8;--accent:#2f6fde}@media (prefers-color-scheme:dark){:root{--foreground:#e8e8ea;--muted-foreground:#9a9aa0;--border:#38383c;--card:#1c1c1f;--accent:#5aa2ff}html{background:#121214}}body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:900px;margin:20px auto;padding:0 16px}</style>
+<style>
+*{box-sizing:border-box}
+body{color:var(--foreground);font-size:14px;line-height:1.45}
+.top{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;margin-bottom:8px}
+.top b{font-size:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
+.chip{border:1px solid var(--border);background:var(--card);color:var(--foreground);border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
+.chip.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card{border:1px solid var(--border);background:var(--card);border-radius:10px;padding:10px 12px;margin:8px 0}
+.card h4{margin:0 0 4px;font-size:14px}
+.tag{display:inline-block;font-size:11px;border-radius:999px;padding:1px 8px;border:1px solid var(--border);margin-right:6px;white-space:nowrap}
+.t-block{border-color:#c4473a;color:#c4473a}.t-soon{border-color:#c98a1b;color:#c98a1b}.t-later{color:var(--muted-foreground)}.t-do{border-color:#4a7fd4;color:#4a7fd4}
+.muted{color:var(--muted-foreground)}
+.why{font-size:13px;margin:4px 0}
+.opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.opt{border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:8px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
+.opt:hover{border-color:var(--accent)}
+.opt.rec{border-color:var(--accent)}
+.free{display:flex;gap:6px;margin-top:6px}
+.free input{flex:1;background:transparent;color:var(--foreground);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font:inherit;font-size:12px}
+.free button{border:1px solid var(--border);background:transparent;color:var(--foreground);border-radius:8px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+details summary{cursor:pointer;color:var(--muted-foreground);font-size:13px;margin-top:10px}
+.done{opacity:.75}
+.sent{font-size:12px;color:var(--accent);margin-top:4px}
+.opts,.free{display:none!important}</style></head><body><div style="font-size:12px;opacity:.7;margin-bottom:6px"><a href="index.html">← System map &amp; roadmap</a></div>
+<div class="top"><b>Waiting on Mike</b><span class="muted" id="sum"></span></div>
+<div class="muted" style="font-size:12px">Updated <span id="upd"></span>. Read-only public copy. Answers are given in Mike's own workspace. <b>Blocking</b> = I can't move that piece forward without it. <b>Your action</b> = something only you can do (sign-ins, accounts).</div>
+<div class="chips" id="chips"></div>
+<div id="list"></div>
+<details><summary id="donesum"></summary><div id="done"></div></details>
+<script>
+const UPDATED="Fri 11/27 12:05 AM";
+// kind: block | soon | later | do
+const D=[
+ {id:'D5',kind:'do',t:'Save the GitHub token on the Mini',
+  why:'In the Hermes Terminal pane (PowerShell on the Mini) run <code>powershell -ExecutionPolicy Bypass -File C:\\ProgramData\\ssg-brain-pass\\add-secret.ps1 GITHUB_TOKEN_SSG</code>, paste the token at the hidden prompt and press Enter. It is saved only for this Windows user and never shown. The token needs <b>Contents: Read and write</b>, not Custom properties. Then I publish the plan site.',
+  blocks:'the public plan site; code backup',opts:['Done','Not yet'],rec:-1},
+ {id:'D19',kind:'block',t:'Run the companion build on Fable 5.2: set the subagent model',
+  why:'Hermes blocks me from changing its own config, so the subagent model has to be set by you. In the Hermes dashboard → <b>Config</b>, under <code>delegation</code>, set <code>model: claude-fable-5-2</code> and <code>provider: anthropic</code>. That applies to every subagent until you set it back to blank. If you would rather not, I can start it now on the default model (Opus 5.5).',
+  blocks:'starting the SSG Capture companion build',opts:['Set it, launch on Fable 5.2','Start now on Opus 5.5'],rec:0},
+ {id:'D15',kind:'soon',t:'Live plan site: get a Cloudflare API token from Joe (or make your own account)',
+  why:'This server only holds the connectors that keep mike.smrtgrp.com and mike-panel.smrtgrp.com up. Those can\'t create new sites. Joe\'s guide assumes a Cloudflare <b>API token</b>, which this box doesn\'t have (checked). Ask Joe for a token on the smrtgrp.com account with: Zone → DNS → Edit (smrtgrp.com), Account → Cloudflare Tunnel → Edit, Account → Access: Apps and Policies → Edit. Put it in <code>~/.hermes/.env</code> as <code>CLOUDFLARE_API_TOKEN=…</code>. I then publish <b>plan.smrtgrp.com</b> behind an email-code login for you, Joe and Nik, updated from the repo.',
+  blocks:'the shareable live link',opts:['Asked Joe for the token','Make my own Cloudflare account instead'],rec:0},
+ {id:'D18',kind:'later',t:'TimeCamp access for the screen companion',
+  why:'Your decision: every 30 min Claude writes the time entries into TimeCamp. TimeCamp API tokens are per user, so each person in the pilot will need to add their own token (in TimeCamp: Profile → Settings → API token) when the app is installed. Nothing to do until Phase 6; noted so it is not a surprise.',
+  blocks:'Phase 6 time tracking',opts:['Noted'],rec:0},
+ {id:'D3b',kind:'soon',t:'Stop the auto-written daily dossiers now?',
+  why:'Agreed on your D3 point: a dossier is a saved filter, not a document. In the meantime the 5 AM pass still writes one "anticipatory" dossier a day and refreshes two. That is model spend on documents nobody asked for. Stopping it is one line in the synthesis skill; "compile on request" stays.',
+  blocks:'nothing; it saves cost',opts:['Stop them now','Leave until the database'],rec:0},
+ {id:'D7',kind:'do',t:'Supabase: save three values on the Mini',
+  why:'In supabase.com (signed in as the admin account) open the project. (1) <b>Project URL</b>: Project Settings → Data API (or API Keys) → Project URL. (2) <b>Secret key</b>: Project Settings → <b>API Keys</b> → Secret keys → copy the secret key (on older screens it is the <i>service_role</i> key, not the anon or publishable one). (3) <b>Database connection</b>: the <b>Connect</b> button at the top → Connection string → <b>Session pooler</b> URI, with <code>[YOUR-PASSWORD]</code> replaced by the database password you chose at creation (forgot it? Project Settings → Database → Reset database password). Save each with <code>powershell -ExecutionPolicy Bypass -File C:\\ProgramData\\ssg-brain-pass\\add-secret.ps1 &lt;NAME&gt;</code>, using the names SUPABASE_URL, SUPABASE_SECRET_KEY and SUPABASE_DB_URL. The secret key and connection string bypass all row security, so they stay on the Mini only and never go into the app or chat.',
+  blocks:'Phase 2 (schema and loaders)',opts:['Done','Not yet'],rec:-1},
+ {id:'D8',kind:'soon',t:'Role matrix (who opens which front end)',
+  why:'A first draft is in the system map, tab 4. It needs your and Nik\'s yes or edits, including whether Open Threads filters by owner.',
+  blocks:'Phase 2 schema (roles), Phase 4 Home',opts:['Draft is fine to start from','I\'ll mark it up'],rec:0},
+ {id:'D9',kind:'soon',t:'What counts as SSG-internal salary / finance / HR, and what happens to unlabelled rows',
+  why:'Loaders need the rule to route items to the restricted store. Unlabelled rows: hold them back until labelled (safe), or treat them as General (faster).',
+  blocks:'Phase 2 loaders',opts:['Unlabelled = held back until labelled','Unlabelled = General'],rec:0},
+ {id:'D10',kind:'later',t:'Media move: when and how (R2 vs B2), with Joe',
+  why:'The chunks folder in SharePoint went from 70.8 GB to 30.0 GB today. Meetings and candidates add about 16.7 GB.',blocks:'Phase 2 media pilot',opts:['Cloudflare R2','Backblaze B2','Talk to Joe first'],rec:2},
+ {id:'D11',kind:'later',t:'Conference-room PC OneDrive gap (11/23–11/25)',
+  why:'That PC hasn\'t uploaded since 11/23 09:10, so the 11/23–11/25 chunks exist only on its disk. Noted, as you asked.',
+  blocks:'nothing urgent',opts:['Fixed','Still open'],rec:-1},
+ {id:'D12',kind:'later',t:'Screen-capture companion (Bluey-style): pilot or not',
+  why:'With the recommended approach it costs about $2–3/month for 5 people on Haiku 5.5, or $0 with on-device text reading and a local model, at some quality cost. Your ChatGPT subscription can\'t be used for this: it doesn\'t include API access.',
+  blocks:'nothing until Phase 6',opts:['Pilot it in Phase 6','Decide later'],rec:1},
+ {id:'D13',kind:'later',t:'Supabase plan and app hosting (Vercel Pro or other)',
+  why:'The free plan is fine for building; this matters before the app goes to the team.',blocks:'Phase 4',opts:['Decide at Phase 4'],rec:0},
+ {id:'D14',kind:'later',t:'Open Threads review (527 rows)',
+  why:'Parked by you: it becomes a front end on the database.',blocks:'nothing now',opts:['Keep parked'],rec:0},
+];
+const DONE=[
+ ['Plan site names','First names and internal names kept; client companies shown as [client] (11/27)'],
+ ['Ask the Brain 0.4.1','Installed (11/27)'],
+ ['D17 Fast lane','(a): the plugin reads the hot file first for "just now" questions. Plugin 0.4.1 installed 11/27'],
+ ['D16 Public site','Public repo, generic names; built and leak-checked, pushes once the GitHub token is in (11/27)'],
+ ['Screen companion shape','Local extraction + a screenshot every 5 min to Haiku; Claude writes TimeCamp entries every 30 min (11/27)'],
+ ['D4 WhatsApp gap','Watch mode on Michael\'s capture, no bot in the groups (11/26)'],
+ ['D4b Fast chats','Nik, SSG ATC, SSG Scheduling, [client]/SSG Coordination, Jeff, Joe; watch mode being built 11/26'],
+ ['D6 Michael\'s OneDrive','Unlinked from the shared library; verified 11/26: Michael\'s copy stopped updating at 11:20, the Mini\'s copy is current'],
+ ['D1 Alert channel','"SSG Alerts" WhatsApp group live 11/26: welcome posted; the watchdog checks the Mini every 5 min (failures, recoveries, Mini offline, supervisor stopped)'],
+ ['D0 OneDrive mass delete','Confirmed by Mike; SharePoint chunks folder 70.8 → 30.0 GB (verified 11/26)'],
+ ['D2 Office Capture cleanup','Weekdays at 6:30 PM (set 11/26)'],
+ ['D3 Dossiers','A dossier is a filtered view: rows from the combined tables assembled on request and rendered for whichever front end asks. Not a stored document.'],
+ ['D6 Michael\'s account','Keep it, but unlink its OneDrive from the shared library (steps in the card)'],
+ ['Which source wins','F, with E flags (11/26)'],
+ ['Health data (PHI)','SSG holds none (11/26)'],
+ ['Office Capture rule','Delete no-talk chunks; keep one blank chunk either side of talk: 606 chunks / 40.8 GB done'],
+ ['Ask the Brain plugin 0.4.0','Installed (11/26)'],
+ ['Speed requirement','Urgent items under 5 minutes; the rest can wait (11/26)'],
+];
+const LAB={block:['Blocking','t-block'],soon:['Answer soon','t-soon'],later:['Later','t-later'],do:['Your action','t-do']};
+let filt='all';
+function send(msg,el){ if(window.hermes&&window.hermes.send){window.hermes.send(msg);} el.insertAdjacentHTML('beforeend',`<div class="sent">Sent: ${msg.replace(/</g,'&lt;')}</div>`); }
+function render(){
+ document.getElementById('upd').textContent=UPDATED;
+ const c={block:0,soon:0,later:0,do:0}; D.forEach(d=>c[d.kind]++);
+ document.getElementById('sum').textContent=`${D.length} open · ${c.block} blocking · ${c.do} your action · ${c.soon} soon · ${c.later} later`;
+ const ch=document.getElementById('chips');
+ ch.innerHTML=[['all','All'],['block','Blocking'],['do','Your action'],['soon','Answer soon'],['later','Later']].map(([k,l])=>`<button class="chip ${filt===k?'on':''}" data-k="${k}">${l}</button>`).join('');
+ ch.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filt=b.dataset.k;render();});
+ const order={block:0,do:1,soon:2,later:3};
+ const list=document.getElementById('list');
+ list.innerHTML=D.filter(d=>filt==='all'||d.kind===filt).sort((a,b)=>order[a.kind]-order[b.kind]).map(d=>`
+  <div class="card" id="c_${d.id}"><h4><span class="tag ${LAB[d.kind][1]}">${LAB[d.kind][0]}</span>${d.id} · ${d.t}</h4>
+  <div class="why">${d.why}</div><div class="muted" style="font-size:12px">Holds up: ${d.blocks}</div>
+  <div class="opts">${d.opts.map((o,i)=>`<button class="opt ${i===d.rec?'rec':''}" data-id="${d.id}" data-o="${o.replace(/"/g,'&quot;')}">${i===d.rec?'★ ':''}${o}</button>`).join('')}</div>
+  <div class="free"><input placeholder="Or answer in your own words…" id="f_${d.id}"><button data-f="${d.id}">Send</button></div></div>`).join('');
+ list.querySelectorAll('.opt').forEach(b=>b.onclick=()=>send(`Decision ${b.dataset.id}: ${b.dataset.o}`, document.getElementById('c_'+b.dataset.id)));
+ list.querySelectorAll('button[data-f]').forEach(b=>b.onclick=()=>{const v=document.getElementById('f_'+b.dataset.f).value.trim(); if(v) send(`Decision ${b.dataset.f}: ${v}`, document.getElementById('c_'+b.dataset.f));});
+ document.getElementById('donesum').textContent=`Answered (${DONE.length})`;
+ document.getElementById('done').innerHTML=DONE.map(x=>`<div class="card done"><b>${x[0]}</b> <span class="muted">— ${x[1]}</span></div>`).join('');
+}
+render();
+</script>
+</body></html>
