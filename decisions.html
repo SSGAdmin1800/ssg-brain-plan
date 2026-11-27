@@ -31,7 +31,7 @@ details summary{cursor:pointer;color:var(--muted-foreground);font-size:13px;marg
 <div id="list"></div>
 <details><summary id="donesum"></summary><div id="done"></div></details>
 <script>
-const UPDATED="Fri 11/27 12:20 AM";
+const UPDATED="Fri 11/27 12:55 AM";
 // kind: block | soon | later | do
 const D=[
  {id:'D15',kind:'soon',t:'Live plan site: get a Cloudflare API token from Joe (or make your own account)',
@@ -40,9 +40,6 @@ const D=[
  {id:'D18',kind:'later',t:'TimeCamp access for the screen companion',
   why:'Your decision: every 30 min Claude writes the time entries into TimeCamp. TimeCamp API tokens are per user, so each person in the pilot will need to add their own token (in TimeCamp: Profile → Settings → API token) when the app is installed. Nothing to do until Phase 6; noted so it is not a surprise.',
   blocks:'Phase 6 time tracking',opts:['Noted'],rec:0},
- {id:'D20',kind:'do',t:'Turn on GitHub Pages for ssg-brain-plan',
-  why:'The site is pushed (index.html, decisions.html). In the repo: <b>Settings → Pages</b> → Source: <i>Deploy from a branch</i> → Branch <b>main</b>, folder <b>/ (root)</b> → Save. After about a minute it is live at <b>https://ssgadmin1800.github.io/ssg-brain-plan/</b>. I check it and republish as decisions land.',
-  blocks:'the shareable link',opts:['Done','Not yet'],rec:-1},
  {id:'D7',kind:'do',t:'Supabase: save three values on the Mini',
   why:'In supabase.com (signed in as the admin account) open the project. (1) <b>Project URL</b>: Project Settings → Data API (or API Keys) → Project URL. (2) <b>Secret key</b>: Project Settings → <b>API Keys</b> → Secret keys → copy the secret key (on older screens it is the <i>service_role</i> key, not the anon or publishable one). (3) <b>Database connection</b>: the <b>Connect</b> button at the top → Connection string → <b>Session pooler</b> URI, with <code>[YOUR-PASSWORD]</code> replaced by the database password you chose at creation (forgot it? Project Settings → Database → Reset database password). Save each with <code>powershell -ExecutionPolicy Bypass -File C:\\ProgramData\\ssg-brain-pass\\add-secret.ps1 &lt;NAME&gt;</code>, using the names SUPABASE_URL, SUPABASE_SECRET_KEY and SUPABASE_DB_URL. The secret key and connection string bypass all row security, so they stay on the Mini only and never go into the app or chat.',
   blocks:'Phase 2 (schema and loaders)',opts:['Done','Not yet'],rec:-1},
@@ -66,8 +63,10 @@ const D=[
   why:'Parked by you: it becomes a front end on the database.',blocks:'nothing now',opts:['Keep parked'],rec:0},
 ];
 const DONE=[
+ ['D20 Plan site','Live at https://ssgadmin1800.github.io/ssg-brain-plan/ (verified 11/27)'],
+ ['D21 Companion model','Relaunched on Opus 5.5, 12:51 AM 11/27; build running'],
  ['D5 GitHub token','Saved on the Mini; first push to ssg-brain-plan worked (commit 99556a5, 11/27)'],
- ['D19 Subagent model','Set to anthropic/claude-fable-5-2; the CaptureCompanion build is running on it (11/27)'],
+ ['D19 Subagent model','Set to anthropic/claude-fable-5-2; first run refused by the Fable usage limit, see D21 (11/27)'],
  ['D3b Auto dossiers','Leave them until the database (11/27)'],
  ['CaptureCompanion','Name, bubble (no phone), clip and snip sharing, snip-and-ask; time tracking at midday and end of day, not weekly (11/27)'],
  ['Plan site names','First names and internal names kept; client companies shown as [client] (11/27)'],
